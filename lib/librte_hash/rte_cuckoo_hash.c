@@ -311,8 +311,7 @@ rte_hash_create(const struct rte_hash_parameters *params)
 	h->num_buckets = num_buckets;
 	h->bucket_bitmask = h->num_buckets - 1;
 	h->buckets = buckets;
-	h->hash_func = (params->hash_func == NULL) ?
-		DEFAULT_HASH_FUNC : params->hash_func;
+	h->hash_func = params->hash_func;
 
 	h->key_store = k;
 	h->free_slots = r;
@@ -373,7 +372,11 @@ hash_sig_t
 rte_hash_hash(const struct rte_hash *h, const void *key)
 {
 	/* calc hash result by key */
-	return h->hash_func(key, h->key_len, h->hash_func_init_val);
+	if (h->hash_func) {
+		return h->hash_func(key, h->key_len, h->hash_func_init_val);
+	}
+	
+	return DEFAULT_HASH_FUNC(key, h->key_len, h->hash_func_init_val);
 }
 
 /* Calc the secondary hash value from the primary hash value of a given key */
